@@ -3,5 +3,5 @@ uvicorn[standard]==0.30.6
 python-multipart==0.0.9
 pymupdf==1.24.10
 fastembed>=0.3.6
-numpy>=1.26.4,<2.0.0
+numpy
 python-dotenv==1.0.1
