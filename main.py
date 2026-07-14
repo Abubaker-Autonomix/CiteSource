@@ -1,15 +1,7 @@
 """
 Source Citation RAG - FastAPI backend.
-
-Upload a PDF -> extract text per page (PyMuPDF) -> chunk -> embed (local,
-free model) -> store in ChromaDB with page-number citations -> search with
-citations returned for every result.
-
-Run locally:
-    uvicorn main:app --reload --port 8001
-
-No API keys required.
 """
+
 import os
 import shutil
 import tempfile
@@ -33,6 +25,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Initialize DB (Supabase schema is managed externally)
 storage.init_db()
 
 
@@ -82,7 +75,7 @@ async def upload_document(background_tasks: BackgroundTasks, file: UploadFile = 
 
 @app.get("/api/documents")
 def list_documents():
-    return storage.list_documents()
+    return storage.get_documents()          # ← Fixed
 
 
 @app.get("/api/documents/{doc_id}")
@@ -101,7 +94,7 @@ class SearchRequest(BaseModel):
 @app.post("/api/search")
 def search(req: SearchRequest):
     query_embedding = embedder.embed_texts([req.query])[0]
-    results = storage.search_chunks(query_embedding, req.top_k)
+    results = storage.search(query_embedding, req.top_k)   # ← Fixed
     return {"query": req.query, "results": results}
 
 
