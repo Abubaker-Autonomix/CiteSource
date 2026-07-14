@@ -86,6 +86,34 @@ def get_document(doc_id: str):
     return doc
 
 
+class RenameRequest(BaseModel):
+    filename: str
+
+
+@app.patch("/api/documents/{doc_id}")
+def rename_document(doc_id: str, req: RenameRequest):
+    doc = storage.get_document(doc_id)
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+    updated = storage.rename_document(doc_id, req.filename)
+    return updated
+
+
+@app.delete("/api/documents/{doc_id}")
+def delete_document(doc_id: str):
+    doc = storage.get_document(doc_id)
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+    storage.delete_document(doc_id)
+    return {"id": doc_id, "deleted": True}
+
+
+@app.delete("/api/documents")
+def clear_documents():
+    storage.clear_documents()
+    return {"cleared": True}
+
+
 class SearchRequest(BaseModel):
     query: str
     top_k: int = 5
