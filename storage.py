@@ -90,7 +90,7 @@ def get_document(doc_id: str) -> dict | None:
             return cur.fetchone()
 
 
-def search(query_embedding: list[float], top_k: int = 5, match_threshold: float = 0.3) -> list[dict]:
+def search(query_embedding: list[float], top_k: int = 5, match_threshold: float = 0.1) -> list[dict]:
     embedding_str = str(query_embedding)
     with get_conn() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
