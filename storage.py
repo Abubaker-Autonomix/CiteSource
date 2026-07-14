@@ -90,6 +90,35 @@ def get_document(doc_id: str) -> dict | None:
             return cur.fetchone()
 
 
+def rename_document(doc_id: str, new_filename: str) -> dict | None:
+    """Edit: update a document's filename."""
+    with get_conn() as conn:
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute(
+                "update documents set filename = %s where id = %s returning *",
+                (new_filename, doc_id),
+            )
+            return cur.fetchone()
+
+
+def delete_document(doc_id: str) -> bool:
+    """Delete a single document and its chunks.
+    Safe to call even if there's no ON DELETE CASCADE FK set up in Neon,
+    since chunks are deleted explicitly first."""
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("delete from chunks where doc_id = %s", (doc_id,))
+            cur.execute("delete from documents where id = %s", (doc_id,))
+            return cur.rowcount > 0
+
+
+def clear_documents() -> None:
+    """Clear: wipe all documents and chunks (e.g. 'Clear All' button)."""
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("truncate table chunks, documents restart identity cascade")
+
+
 def search(query_embedding: list[float], top_k: int = 5, match_threshold: float = 0.1) -> list[dict]:
     embedding_str = str(query_embedding)
     with get_conn() as conn:
